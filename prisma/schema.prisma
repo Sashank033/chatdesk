@@ -10,6 +10,48 @@ enum WorkspaceRole {
   OWNER
   MEMBER
 }
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+model Workspace {
+  id           String                 @id @default(cuid())
+  name         String
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+  ownerId      String
+  owner        User                   @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  memberships  WorkspaceMembership[]
+  conversations Conversation[]
+}
+
+model Conversation {
+  id          String    @id @default(cuid())
+  title       String
+  workspaceId String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  messages  Message[]
+
+  @@index([workspaceId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  role           MessageRole
+  content        String       @db.Text
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+}
 
 model User {
   id            String    @id @default(cuid())
@@ -27,17 +69,6 @@ model User {
   workspaceMemberships WorkspaceMembership[]
 }
 
-model Workspace {
-  id        String   @id @default(cuid())
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  ownerId   String
-  owner     User     @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-
-  memberships WorkspaceMembership[]
-}
 
 model WorkspaceMembership {
   id          String        @id @default(cuid())

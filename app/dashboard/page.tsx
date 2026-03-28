@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
+import { SignOutButton } from "@/components/auth/sign-out-button";
 import { CreateWorkspaceForm } from "@/components/dashboard/create-workspace-form";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -54,13 +55,19 @@ export default async function DashboardPage() {
     <main className="min-h-screen bg-background px-6 py-16 text-foreground">
       <div className="mx-auto max-w-4xl space-y-6">
         <div className="rounded-2xl border bg-card p-8 shadow-sm">
-          <p className="text-sm font-medium text-muted-foreground">Dashboard</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-            Welcome, {session.user.name ?? session.user.email ?? "User"}
-          </h1>
-          <p className="mt-3 text-sm text-muted-foreground">
-            This dashboard is protected and now supports multi-workspace membership.
-          </p>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Dashboard</p>
+              <h1 className="mt-2 text-3xl font-semibold tracking-tight">
+                Welcome, {session.user.name ?? session.user.email ?? "User"}
+              </h1>
+              <p className="mt-3 text-sm text-muted-foreground">
+                This dashboard is protected and now supports multi-workspace membership.
+              </p>
+            </div>
+
+            <SignOutButton className="w-full sm:w-auto" />
+          </div>
 
           <div className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
             <section className="rounded-xl border bg-background p-5">
@@ -90,9 +97,10 @@ export default async function DashboardPage() {
                       "Unknown owner";
 
                     return (
-                      <div
+                      <Link
                         key={membership.id}
-                        className="rounded-xl border p-5 transition-colors hover:bg-accent/30"
+                        className="block rounded-xl border p-5 transition-colors hover:bg-accent/30"
+                        href={`/dashboard/${membership.workspace.id}`}
                       >
                         <div className="flex items-start justify-between gap-4">
                           <div>
@@ -101,11 +109,14 @@ export default async function DashboardPage() {
                               {isOwner ? "Owned by you" : `Owned by ${ownerLabel}`}
                             </p>
                           </div>
-                          <span className="rounded-full border px-3 py-1 text-xs font-medium">
-                            {membership.role}
-                          </span>
+                          <div className="flex flex-col items-end gap-2">
+                            <span className="rounded-full border px-3 py-1 text-xs font-medium">
+                              {membership.role}
+                            </span>
+                            <span className="text-xs text-muted-foreground">Open workspace</span>
+                          </div>
                         </div>
-                      </div>
+                      </Link>
                     );
                   })
                 )}
